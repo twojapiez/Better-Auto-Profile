@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Make sure you install dependencies first:
 # pip3 install -U steam[client]
+# If it doesnt work try running on windows and dont bother with installing dependencies on linux
 
 import json
 import time
@@ -14,27 +15,28 @@ f.close()
 
 data = data.replace('\r\n', '\n')
 accounts = data.split('\n')
-accounts = [account for account in accounts if account.strip()]  # we don't want empty strings.
+accounts = [account for account in accounts if account.strip()]
+
 ## Change stuff below to your liking.
 profile = open('image.jpg', 'rb')
-nickname = 'Your nick.'
+default_nickname = 'Your nick.'
 
 enable_debugging = False # Debug info toggle.
 enable_extra_info = False # Yap info toggle.
 enable_avatarchange = False # Toggle for changing the avatars. This does not work.
-enable_namechange = True # Toggle for changing the nicks.
-enable_nameclear = True # Clears the prev nick list. 
+enable_namechange = False # Toggle for changing the nicks.
+enable_nameclear = False # Clears the prev nick list.  This does not work.
 enable_set_up = False # Sets up the profile. Useless.
 enable_gatherid32 = False # Collects steam32 ids of the accounts.
 dump_response = False # I can only guess what this does.
 make_commands = False # Changes steamids to cat_pl_add_id *id* CAT commands.
 force_sleep = False # Too lazy to know what this does!
 Randomname = False  # Toggle this to generate random account names
-InsertRandomChars = True  # Toggle this to insert random characters into the nickname
+InsertRandomChars = False  # Toggle this to insert random characters into the nickname
 random_name_length = 32  # Length of the random account name
 random_chars = [ '็', '่', '๊', '๋', '์', 'ู']  # Modify this list as you wish currently holds random semi-invis symbols for tf2
 loopupdateprofiles = False  # Toggle this to loop profile updates
-update_interval = 600  # Time to wait between updates in seconds
+update_interval = 120  # Time to wait between updates in seconds
 
 def debug(message):
     if enable_debugging:
@@ -57,8 +59,8 @@ def generate_random_string(length):
 
 def update_profiles():
     if enable_gatherid32:
-        open('steamid32.txt', 'w').close()  
-        id_file = open('steamid32.txt', 'a')  
+        open('steamid32.txt', 'w').close() 
+        id_file = open('steamid32.txt', 'a') 
 
     for index, account in enumerate(accounts):
         username, password = account.split(':')
@@ -90,8 +92,10 @@ def update_profiles():
         if enable_namechange:
             if Randomname:
                 nickname = generate_random_string(random_name_length)
+            else:
+                nickname = default_nickname
             if InsertRandomChars:
-                nickname = insert_random_chars(nickname, random_chars, 3)  # Todo: Add a way to change how many characters are inserted
+                nickname = insert_random_chars(nickname, random_chars, 3)
             time.sleep(5) 
             client.change_status(persona_state=1, player_name=nickname)
             print(f'Changed Steam nickname to "{nickname}"')
@@ -104,7 +108,7 @@ def update_profiles():
 
                 if enable_avatarchange:
                     url = 'https://steamcommunity.com/actions/FileUploader'
-                    id64 = client.steam_id.as_64  
+                    id64 = client.steam_id.as_64  # type int
                     data = {
                         'MAX_FILE_SIZE': '1048576',
                         'type': 'player_avatar_image',
@@ -156,10 +160,14 @@ def update_profiles():
         print()
         if ((enable_avatarchange or enable_set_up) and (index + 1 != len(accounts) or len(accounts) <= 10)) or force_sleep:
             time.sleep(31)
+
     if enable_gatherid32:
         id_file.close()
+
     profile.close()
+
     print('Done.')
+
 if loopupdateprofiles:
     while True:
         update_profiles()
