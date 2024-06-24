@@ -1,12 +1,4 @@
 #!/usr/bin/env python3
-
-# This script automatically sets up Steam avatars, nicknames, and gathers the SteamID32 for bots.
-# Change make_commands to False if you wish to get just the SteamID32, instead of Cathook's change playerstate command
-# You do not have to "set up" a steam profile on each account for this to work, evidently.
-# Simply copy your accounts.txt and bot-profile.jpg here and run: ./auto-profile.py
-# Image format can be PNG, this script just expects the filename to be .jpg
-# credits to rosne-gamingyt for fixing the script
-
 # Make sure you install dependencies first:
 # pip3 install -U steam[client]
 # If it doesnt work try running on windows and dont bother with installing dependencies on linux
@@ -15,6 +7,7 @@ import json
 import time
 import random
 import steam.client
+import string
 
 f = open('accounts.txt', 'r')
 data = f.read()
@@ -22,10 +15,10 @@ f.close()
 
 data = data.replace('\r\n', '\n')
 accounts = data.split('\n')
-accounts = [account for account in accounts if account.strip()]  # we don't want empty strings.
+accounts = [account for account in accounts if account.strip()] 
 
-profile = open('boat.png', 'rb')
-nickname = 'Twojapies #FIXTF2'
+profile = open('image.jpg', 'rb')
+nickname = 'Your nick.'
 
 enable_debugging = False
 enable_extra_info = False
@@ -37,7 +30,9 @@ enable_gatherid32 = True
 dump_response = False
 make_commands = True
 force_sleep = False
-
+Randomname = True  # Toggle this to generate random account names
+InsertRandomChars = True  # Toggle this to insert random characters into the nickname
+random_name_length = 10  # Length of the random account name
 random_chars = [ '็', '่', '๊', '๋', '์', 'ู']  # Modify this list as you wish currently holds random semi-invis symbols for tf2
 
 def debug(message):
@@ -56,9 +51,12 @@ def insert_random_chars(name, chars, num_insertions):
         name_list.insert(pos, char)
     return ''.join(name_list)
 
+def generate_random_string(length):
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+
 if enable_gatherid32:
-    open('steamid32.txt', 'w').close()  # Erase any previous contents
-    id_file = open('steamid32.txt', 'a')  # Open the file as append
+    open('steamid32.txt', 'w').close()
+    id_file = open('steamid32.txt', 'a')  
 
 for index, account in enumerate(accounts):
     username, password = account.split(':')
@@ -88,10 +86,13 @@ for index, account in enumerate(accounts):
             print('Saved the SteamID32 as raw.')
 
     if enable_namechange:
-        modified_nickname = insert_random_chars(nickname, random_chars, 3)  # Insert 3 random characters
-        time.sleep(5)  # Needed, since Steam refuses to change status if we do it too soon
-        client.change_status(persona_state=1, player_name=modified_nickname)
-        print(f'Changed Steam nickname to "{modified_nickname}"')
+        if Randomname:
+            nickname = generate_random_string(random_name_length)
+        if InsertRandomChars:
+            nickname = insert_random_chars(nickname, random_chars, 3)  
+        time.sleep(5) 
+        client.change_status(persona_state=1, player_name=nickname)
+        print(f'Changed Steam nickname to "{nickname}"')
 
     if enable_avatarchange or enable_nameclear or enable_set_up:
         print('Getting web_session...')
@@ -149,22 +150,11 @@ for index, account in enumerate(accounts):
 
     print('Done; logging out.')
     client.logout()
-
-    # Seek to the beginning of the profile image file; reuse the file
     profile.seek(0)
-
-    # Spacing between accounts
     print()
-
-    # Only pause if we're changing avatars or setting up the community profile, and we're not at the last account,
-    # we have less than or equal to 10 accounts in total, or force_sleep is set to True
     if ((enable_avatarchange or enable_set_up) and (index + 1 != len(accounts) or len(accounts) <= 10)) or force_sleep:
-        # For file avatars, no more than 10 avatars per 5 minutes from each IP address
         time.sleep(31)
-
 if enable_gatherid32:
     id_file.close()
-
 profile.close()
-
 print('Done.')
