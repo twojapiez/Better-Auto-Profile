@@ -37,6 +37,7 @@ random_name_length = 32  # Length of the random account name
 random_chars = [ '็', '่', '๊', '๋', '์', 'ู']  # Modify this list as you wish currently holds random semi-invis symbols for tf2
 loopupdateprofiles = False  # Toggle this to loop profile updates
 update_interval = 120  # Time to wait between updates in seconds
+num_insertions = 3  # Number of random characters to insert
 
 def debug(message):
     if enable_debugging:
@@ -95,7 +96,7 @@ def update_profiles():
             else:
                 nickname = default_nickname
             if InsertRandomChars:
-                nickname = insert_random_chars(nickname, random_chars, 3)
+                nickname = insert_random_chars(nickname, random_chars, num_insertions)
             time.sleep(5) 
             client.change_status(persona_state=1, player_name=nickname)
             print(f'Changed Steam nickname to "{nickname}"')
