@@ -37,7 +37,6 @@ random_name_length = 32  # Length of the random account name
 random_chars = [ '็', '่', '๊', '๋', '์', 'ู']  # Modify this list as you wish currently holds random semi-invis symbols for tf2
 loopupdateprofiles = False  # Toggle this to loop profile updates
 update_interval = 120  # Time to wait between updates in seconds
-num_insertions = 3  # Number of random characters to insert
 
 def debug(message):
     if enable_debugging:
@@ -59,6 +58,8 @@ def generate_random_string(length):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
 def update_profiles():
+    profile = open('image.jpg', 'rb')
+
     if enable_gatherid32:
         open('steamid32.txt', 'w').close() 
         id_file = open('steamid32.txt', 'a') 
